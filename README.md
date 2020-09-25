@@ -2,7 +2,7 @@
 
 ## Preview 
 
-![Preview image](/public/images/screenshot.png "Preview")
+![](https://raw.githubusercontent.com/woinbo/Blog-Website-nodejs/master/public/images/screenshot.PNG)
 
 
 ## Features
