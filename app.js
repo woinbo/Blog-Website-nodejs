@@ -4,6 +4,21 @@ const ejs = require("ejs");
 const lodash = require("lodash");
 const mongoose = require("mongoose");
 
+// Database connection |  - mongoDB -  |
+
+mongoose.connect("mongodb://localhost:27017/blogDB", {
+  useNewUrlParser: true,
+  useCreateIndex: true,
+  useUnifiedTopology: true,
+});
+
+const blogPostSchema = {
+  title: String,
+  postContent: String,
+};
+
+const blog = mongoose.model("Post", blogPostSchema);
+
 const homeStartingContent =
   "Lacus vel facilisis volutpat est velit egestas dui id ornare. Semper auctor neque vitae tempus quam. Sit amet cursus sit amet dictum sit amet justo. Viverra tellus in hac habitasse. Imperdiet proin fermentum leo vel orci porta. Donec ultrices tincidunt arcu non sodales neque sodales ut. Mattis molestie a iaculis at erat pellentesque adipiscing. Magnis dis parturient montes nascetur ridiculus mus mauris vitae ultricies. Adipiscing elit ut aliquam purus sit amet luctus venenatis lectus. Ultrices vitae auctor eu augue ut lectus arcu bibendum at. Odio euismod lacinia at quis risus sed vulputate odio ut. Cursus mattis molestie a iaculis at erat pellentesque adipiscing.";
 const aboutContent =
@@ -18,24 +33,39 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-const blogData = [];
+// const blogData = [];
 
 app.get("/", function (req, res) {
-  res.render("home", {
-    homeStartingContent: homeStartingContent,
-    data: blogData,
-  });
-  
-});
-
-app.get("/posts/:postTitle", function (req, res) {
-  const requestedTitle = lodash.lowerCase(req.params.postTitle);
-
-  blogData.forEach((element) => {
-    if (requestedTitle === lodash.lowerCase(element.title)) {
-      res.render("post", { title: element.title, content: element.content });
+  blog.find({}, function (err, result) {
+    if (err) {
+      console.log(err);
+    } else {
+      res.render("home", {
+        homeStartingContent: homeStartingContent,
+        data: result,
+      });
     }
   });
+});
+
+app.get("/posts/:ObjectID", function (req, res) {
+  const requestedID = req.params.ObjectID;
+
+  blog.findOne(
+    {
+      _id: requestedID,
+    },
+    function (err, result) {
+      if (err) {
+        console.log(err);
+      } else {
+        res.render("post", {
+          title: result.title,
+          content: result.postContent,
+        });
+      }
+    }
+  );
 });
 
 app.get("/about", function (req, res) {
@@ -53,11 +83,11 @@ app.get("/compose", function (req, res) {
 app.post("/comp", function (req, res) {
   let title = req.body.title;
   let content = req.body.content;
-  const jsOb = {
+  const day1 = new blog({
     title: title,
-    content: content,
-  };
-  blogData.push(jsOb);
+    postContent: content,
+  });
+  day1.save();
   res.redirect("/");
 });
 
